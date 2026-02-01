@@ -1,1 +1,30 @@
+import pandas as pd
+import numpy as np
 
+from sklearn.linear_model import LinearRegression
+from sklearn.experimental import enable_iterative_imputer  
+from sklearn.impute import IterativeImputer
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+ df = np.round(pd.read_csv('50_Startups.csv')[['R&D Spend','Administration','Marketing Spend','Profit']]/10000)
+np.random.seed(9)
+df = df.sample(5)
+df
+x_train = df.drop('Profit',axis=1)
+y_train = df['Profit']
+x_train,x_test,y_train,y_test = train_test_split(x_train,y_train,test_size=0.3,random_state=0)
+# Step 1: Create IterativeImputer
+imputer = IterativeImputer(estimator=LinearRegression(), random_state=0)
+
+# Step 2: Fit the imputer on x_train only (never on x_test)
+imputer.fit(x_train)
+
+# Step 3: Transform both train and test sets
+x_train_imputed = imputer.transform(x_train)
+x_test_imputed = imputer.transform(x_test)
+lr=LinearRegression()
+lr.fit(x_train_imputed,y_train)
+y_pred=lr.predict(x_test_imputed)
+r2_score(y_test,y_pred)
